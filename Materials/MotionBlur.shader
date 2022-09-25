@@ -61,21 +61,21 @@
                 1.0 / BLUR_SAMPLE_COUNT
             };
 
-            float magnitude2(float2 vec){
-                return vec.x * vec.x + vec.y * vec.y;
+            float magnitude(float2 vec){
+                return max(abs(vec.x), abs(vec.y));
             }
             // 画面上におけるブラーの中心点までの最大距離を計算する
             float calcMaxDistance()
             {
                 // どの点が中心点だったとしても、最大距離を取るのは四角のどれか
-                float distance1 = magnitude2(float2(0, 0) - _BlurCenterPoint);
-                float distance2 = magnitude2(float2(1, 0) - _BlurCenterPoint);
-                float distance3 = magnitude2(float2(0, 1) - _BlurCenterPoint);
-                float distance4 = magnitude2(float2(1, 1) - _BlurCenterPoint);
+                float distance1 = magnitude(float2(0, 0) - _BlurCenterPoint);
+                float distance2 = magnitude(float2(1, 0) - _BlurCenterPoint);
+                float distance3 = magnitude(float2(0, 1) - _BlurCenterPoint);
+                float distance4 = magnitude(float2(1, 1) - _BlurCenterPoint);
 
                 float maxDistance = max(distance1, max(distance2, max(distance3, distance4)));
 
-                return sqrt(maxDistance);
+                return maxDistance;
             }
 
             fixed4 frag (v2f i) : SV_Target
@@ -88,7 +88,7 @@
 
                 // ブラーの中心からの距離。距離が遠いほど強くブラーがかかるようにする。
                 // ここでアスペクト比を考慮すれば画面上下端に左右端と同じだけの効果を与えることが出来るかもしれない(今回は純粋に距離だけを見たいのでそうしない)
-                float distance = sqrt(dir.x * dir.x + dir.y * dir.y);
+                float distance = magnitude(dir);
 
                 // 方向ベクトルを正規化
                 dir /= sqrt(dir.x * dir.x + dir.y * dir.y);

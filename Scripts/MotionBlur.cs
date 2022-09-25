@@ -11,7 +11,7 @@ public class MotionBlur : MonoBehaviour
         float vertical = Input.GetAxis("Vertical");
         transform.position += Vector3.forward * vertical * speed * Time.deltaTime;
 
-        motionBlurMaterial.SetFloat("_SpeedCoeff", Mathf.Abs(vertical));
+        //motionBlurMaterial.SetFloat("_SpeedCoeff", Mathf.Abs(vertical));
     }
 
     private void OnRenderImage(RenderTexture src, RenderTexture dest)
