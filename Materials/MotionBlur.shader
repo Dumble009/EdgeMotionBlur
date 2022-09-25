@@ -98,7 +98,8 @@
                 distance = pow(distance, _EdgeCoeff); // distanceは0~1の範囲を取るので、2乗することで、より端の方だけを効果の対象にする事が出来る。
 
                 for(int j = 0; j < BLUR_SAMPLE_COUNT; j++){
-                    col += tex2D(_MainTex, i.uv + (dir / BLUR_SAMPLE_COUNT) * j * scale * distance * _SpeedCoeff) * BLUR_WEIGHTS[j];
+                    float2 samplePoint = i.uv - dir / BLUR_SAMPLE_COUNT * j * scale * distance * _SpeedCoeff;
+                    col += tex2D(_MainTex, samplePoint) * BLUR_WEIGHTS[j] ;
                 }
 
                 return col;
