@@ -64,6 +64,7 @@
             float magnitude(float2 vec){
                 return max(abs(vec.x), abs(vec.y));
             }
+
             // 画面上におけるブラーの中心点までの最大距離を計算する
             float calcMaxDistance()
             {
@@ -80,10 +81,9 @@
 
             fixed4 frag (v2f i) : SV_Target
             {
-                float2 scale = _BlurSize;
                 fixed4 col = 0;
                 
-                // ブラーの中心から該当ピクセルまでの方向ベクトル。このベクトルに沿ってぼかしのサンプリングを行う
+                // ブラーの中心から該当ピクセルまでの方向ベクトル。このベクトルに沿ってサンプリングを行う
                 float2 dir = i.uv - _BlurCenterPoint;
 
                 // ブラーの中心からの距離。距離が遠いほど強くブラーがかかるようにする。
@@ -96,10 +96,10 @@
                 // 画面の中心から最も遠い点までの距離が1になるように距離を正規化
                 distance /= calcMaxDistance(); 
 
-                distance = pow(distance, _EdgeCoeff); // distanceは0~1の範囲を取るので、2乗することで、より端の方だけを効果の対象にする事が出来る。
+                distance = pow(distance, _EdgeCoeff); // distanceは0~1の範囲を取るので、累乗することで、より端の方だけを効果の対象にする事が出来る。
 
                 for(int j = 0; j < BLUR_SAMPLE_COUNT; j++){
-                    float2 samplePoint = i.uv - dir / BLUR_SAMPLE_COUNT * j * scale * distance * _SpeedCoeff;
+                    float2 samplePoint = i.uv - dir / BLUR_SAMPLE_COUNT * j * distance * _SpeedCoeff *_BlurSize;
                     col += tex2D(_MainTex, samplePoint) * BLUR_WEIGHTS[j] ;
                 }
 
