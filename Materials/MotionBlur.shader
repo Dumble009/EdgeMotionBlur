@@ -30,17 +30,6 @@
                 float4 vertex : SV_POSITION;
             };
 
-            // 画面のアスペクト比の計算
-            // 参考 : https://qiita.com/Santarh/items/428d2e0f33852e6f37b5
-            float getAspect()
-            {
-                float4 projectionSpaceUpperRight = float4(1, 1, UNITY_NEAR_CLIP_VALUE, _ProjectionParams.y);
-                float4 viewSpaceUpperRight = mul(unity_CameraInvProjection, projectionSpaceUpperRight);
-                float aspect = viewSpaceUpperRight.x / viewSpaceUpperRight.y;
-
-                return aspect;
-            }
-
             v2f vert (appdata v)
             {
                 v2f o;
@@ -53,13 +42,32 @@
             half _BlurSize;
 
             static const int BLUR_SAMPLE_COUNT = 8;
+            // 近い点から遠い点に向かってサンプリングする際の重みづけ係数を設定していく
+            // 総和が1になるようにする
+            static const float BLUR_WEIGHTS[BLUR_SAMPLE_COUNT] = {
+                1.0 / BLUR_SAMPLE_COUNT,
+                1.0 / BLUR_SAMPLE_COUNT,
+                1.0 / BLUR_SAMPLE_COUNT,
+                1.0 / BLUR_SAMPLE_COUNT,
+                1.0 / BLUR_SAMPLE_COUNT,
+                1.0 / BLUR_SAMPLE_COUNT,
+                1.0 / BLUR_SAMPLE_COUNT,
+                1.0 / BLUR_SAMPLE_COUNT
+            };
 
             fixed4 frag (v2f i) : SV_Target
             {
-                float aspect = getAspect();
                 float2 scale = _BlurSize / 1000;
-                fixed4 col = tex2D(_MainTex, i.uv);
+                fixed4 col = 0;
                 
+                // 画面中心から該当ピクセルまでのベクトル。このベクトルに従ってぼかしのサンプリングを行う
+                float2 dir = float2(i.uv.x - 0.5, i.uv.y - 0.5);
+                dir /= sqrt(dir.x * dir.x + dir.y * dir.y); // 正規化
+
+                for(int j = 0; j < BLUR_SAMPLE_COUNT; j++){
+                    col += tex2D(_MainTex, i.uv + (dir / BLUR_SAMPLE_COUNT) * j * scale) * BLUR_WEIGHTS[j];
+                }
+
                 return col;
             }
             ENDCG
