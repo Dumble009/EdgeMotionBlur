@@ -33624,6 +33624,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   motionBlurMaterial: {fileID: 2100000, guid: e9892f61702bcba40be6fc8c4c6b9680, type: 2}
+  speed: 10
 --- !u!1 &1960355237
 GameObject:
   m_ObjectHideFlags: 0
