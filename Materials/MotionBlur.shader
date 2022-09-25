@@ -5,6 +5,7 @@
         _MainTex ("Texture", 2D) = "white" {}
         _BlurSize ("Blur Size", Float) = 0
         _EdgeCoeff ("Edge Coefficient", Float) = 1
+        _SpeedCoeff ("Speed Coefficient", Float) = 0
     }
     SubShader
     {
@@ -41,7 +42,8 @@
 
             sampler2D _MainTex;
             half _BlurSize;
-            half _EdgeCoeff;
+            half _EdgeCoeff; // 端の方だけに効果をかけるために使用する係数。大きいほど端のみに効果が表れる
+            half _SpeedCoeff; // スピードに応じて増減させる係数(0~1)。大きくするほど効果が強くなる。ゲーム側の最高速度で1に、停止中は0にする。
 
             static const int BLUR_SAMPLE_COUNT = 8;
             // 近い点から遠い点に向かってサンプリングする際の重みづけ係数を設定していく
@@ -59,7 +61,7 @@
 
             fixed4 frag (v2f i) : SV_Target
             {
-                float2 scale = _BlurSize / 1000;
+                float2 scale = _BlurSize;
                 fixed4 col = 0;
                 
                 // 画面中心から該当ピクセルまでの方向ベクトル。このベクトルに沿ってぼかしのサンプリングを行う
@@ -77,7 +79,7 @@
                 distance = pow(distance, _EdgeCoeff); // distanceは0~1の範囲を取るので、2乗することで、より端の方だけを効果の対象にする事が出来る。
 
                 for(int j = 0; j < BLUR_SAMPLE_COUNT; j++){
-                    col += tex2D(_MainTex, i.uv + (dir / BLUR_SAMPLE_COUNT) * j * scale * distance) * BLUR_WEIGHTS[j];
+                    col += tex2D(_MainTex, i.uv + (dir / BLUR_SAMPLE_COUNT) * j * scale * distance * _SpeedCoeff) * BLUR_WEIGHTS[j];
                 }
 
                 return col;
